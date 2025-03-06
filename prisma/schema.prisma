@@ -1,0 +1,44 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  username String
+  password String
+  favorites Favorite[]
+
+  @@map("user")
+}
+
+model Floor {
+  id             Int        @id @default(autoincrement())
+  rooms          Int
+  area           Int
+  discount       Boolean?
+  project        String
+  price          Int
+  oldPrice       Int?       @map("old_price")
+  floor          Int
+  totalFloors    Int        @map("total_floors")
+  completionDate DateTime   @default(now())
+  imageSrc       String
+  users          Favorite[]
+
+  @@map("floor")
+}
+
+model Favorite {
+  id      Int   @id @default(autoincrement())
+  user    User  @relation(fields: [userId], references: [id])
+  userId  Int
+  floor   Floor @relation(fields: [floorId], references: [id])
+  floorId Int   
+
+  @@map("favorite")
+}

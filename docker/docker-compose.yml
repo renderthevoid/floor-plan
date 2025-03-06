@@ -1,0 +1,13 @@
+version: '3.9'
+name: 'floors'
+
+services:
+  postgres:
+    container_name: floors_db
+    image: postgres:16-alpine3.19
+    environment:
+      POSTGRES_DB: floors_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - 5432:5432
