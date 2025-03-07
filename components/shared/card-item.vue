@@ -12,30 +12,21 @@
           </div>
           <div class="flex gap-4 items-end h-full">
             <span class="text-xl font-semibold">{{ props.obj.price }} ₽</span>
-            <span class="text-xs" v-if="props.obj.discount"
+            <span class="text-xs line-through" v-if="props.obj.discount"
               >{{ props.obj.oldPrice }} ₽</span
             >
           </div>
         </div>
-        <div>
+        <div class="group">
           <button
-            class="border border-foreground rounded-full p-4"
+            class="rounded-full p-2 group-hover:bg-muted/30 transition-all"
+            :class="isFavorite ? 'border-destructive' : 'border-foreground'"
             @click="clickHandler"
           >
-            <span>
-              <svg
-                width="19"
-                height="19"
-                viewBox="0 0 19 19"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M9.5 19.0002L8.1225 17.6334C3.23 12.798 0 9.59852 0 5.69498C0 2.49552 2.299 0.000152588 5.225 0.000152588C6.878 0.000152588 8.4645 0.838845 9.5 2.15383C10.5355 0.838845 12.122 0.000152588 13.775 0.000152588C16.701 0.000152588 19 2.49552 19 5.69498C19 9.59852 15.77 12.798 10.8775 17.6334L9.5 19.0002Z"
-                  :fill="isFavorite ? '#eb4c0c' : '#040306'"
-                />
-              </svg>
-            </span>
+            <Heart
+              :size="20"
+              :class="isFavorite ? 'stroke-destructive' : 'stroke-foreground'"
+            />
           </button>
         </div>
       </div>
@@ -66,6 +57,7 @@
 import type { Floor } from "@prisma/client";
 import dayjs from "dayjs";
 import "dayjs/locale/ru";
+import { Heart } from "lucide-vue-next";
 
 type FloorWithFavoriteExtended = Floor & {
   favoriteId?: number | null;
