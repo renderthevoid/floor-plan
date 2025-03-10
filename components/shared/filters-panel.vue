@@ -4,16 +4,14 @@
       <FiltersPanelItem title="Проект">
         <Select>
           <SelectTrigger class="w-[180px]">
-            <SelectValue placeholder="Select a fruit" />
+            <SelectValue placeholder="Выберите проект" />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
-              <SelectLabel>Fruits</SelectLabel>
-              <SelectItem value="apple"> Apple </SelectItem>
-              <SelectItem value="banana"> Banana </SelectItem>
-              <SelectItem value="blueberry"> Blueberry </SelectItem>
-              <SelectItem value="grapes"> Grapes </SelectItem>
-              <SelectItem value="pineapple"> Pineapple </SelectItem>
+              <SelectLabel>Проекты</SelectLabel>
+              <template v-for="(project, i) in projects" :key="project">
+                <SelectItem :value="project">{{ project }}</SelectItem>
+              </template>
             </SelectGroup>
           </SelectContent>
         </Select>
@@ -32,8 +30,7 @@
           :max="20000000"
           :step="10000"
           metric="₽"
-          v-model="pricesRef"
-          @update:modelValue="sliderHandler"
+          v-model="filtersState.prices"
         ></FiltersInput>
       </FiltersPanelItem>
 
@@ -42,15 +39,14 @@
           :min="20"
           :max="200"
           :step="0.1"
-          v-model="squaresRef"
-          @update:modelValue="squaresHandler"
+          v-model="filtersState.squares"
         ></FiltersInput>
       </FiltersPanelItem>
     </div>
     <div class="flex items-center justify-end mt-12">
-      <span class="text-foreground text-md text-center flex-1"
-        >Найдено {{ floorsStore.floorsCount }} квартир</span
-      >
+      <span class="text-foreground text-md text-center flex-1">
+        Найдено {{ floorsStore.floorsCount }} квартир
+      </span>
       <div>
         <Button
           variant="link"
@@ -58,95 +54,66 @@
           @click="resetFilters"
         >
           <RotateCcw class="w-4 h-4 mr-2" color="#948f8f" />
-          <span>Очистить всё</span></Button
-        >
+          <span>Очистить всё</span>
+        </Button>
       </div>
     </div>
   </div>
 </template>
 
-<script lang="ts" setup>
-import { RotateCcw } from "lucide-vue-next";
-import { type HTMLAttributes } from "vue";
+<script setup lang="ts">
+import { reactive, ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { useFloorsStore } from "~/store/floorsStore";
 
-
-interface IRange<T> {
-  from: T;
-  to: T;
-}
-interface IProps {
-  class?: HTMLAttributes["class"];
-}
-
-interface ITypes {
-  id: number;
-  roominess: string;
-  pressed: boolean;
-}
-
-const props = defineProps<IProps>();
-
-const items = ref<Array<ITypes>>([
-  {
-    id: 0,
-    roominess: "Ст",
-    pressed: false,
-  },
-  {
-    id: 1,
-    roominess: "1к",
-    pressed: false,
-  },
-  {
-    id: 2,
-    roominess: "2к",
-    pressed: false,
-  },
-  {
-    id: 3,
-    roominess: "3к",
-    pressed: false,
-  },
-  {
-    id: 4,
-    roominess: "4к",
-    pressed: false,
-  },
-]);
-
+const router = useRouter();
+const route = useRoute();
 const floorsStore = useFloorsStore();
+
+const items = ref([
+  { id: 0, roominess: "Ст", pressed: false },
+  { id: 1, roominess: "1к", pressed: false },
+  { id: 2, roominess: "2к", pressed: false },
+  { id: 3, roominess: "3к", pressed: false },
+  { id: 4, roominess: "4к", pressed: false },
+]);
+// const projects = computed(() => {
+//   return [...new Set(floorsStore.floors.map((i) => i.project))];
+// });
+
+const projects = ref();
+
 const filtersState = reactive({
-  prices: { from: 2800000, to: 20000000 } as IRange<number>,
-  squares: { from: 20.0, to: 200.0 } as IRange<number>,
+  prices: [2800000, 20000000],
+  squares: [20, 200],
 });
 
-const pricesRef = ref([
-  filtersState.prices.from,
-  filtersState.prices.to,
-]);
+watch(
+  () => filtersState.prices,
+  ([from, to]) => {
+    router.replace({ query: { ...route.query, minPrice: from, maxPrice: to } });
+  },
+  { deep: true }
+);
 
-const squaresRef = ref([
-  filtersState.squares.from || 0,
-  filtersState.squares.to || 300,
-]);
-
-const sliderHandler = ([from, to]: number[]) => {
-  filtersState.prices = { from, to };
-};
-
-const squaresHandler = ([from, to]: number[]) => {
-  filtersState.squares = { from, to };
-};
+watch(
+  () => filtersState.squares,
+  ([from, to]) => {
+    router.replace({
+      query: { ...route.query, minSquare: from, maxSquare: to },
+    });
+  },
+  { deep: true }
+);
 
 const resetFilters = () => {
-  items.value.map((i) => (i.pressed = false));
-  Object.assign(filtersState, {
-    prices: { priceFrom: 2800000, priceTo: 20000000 },
-    squares: { squareFrom: 20.0, squareTo: 200.0 },
-  });
+  items.value.forEach((i) => (i.pressed = false));
+  filtersState.prices = [2800000, 20000000];
+  filtersState.squares = [20, 200];
+  router.replace({ query: {} });
 };
 
+callOnce(() => {
+  projects.value = [...new Set(floorsStore.floors.map((i) => i.project))];
+});
 </script>
-
-<style scoped></style>

@@ -6,16 +6,20 @@
           <h1 class="text-3xl font-bold">ПЛАНИРОВКИ</h1>
         </NuxtLink>
         <div class="flex items-center justify-center gap-2">
-          <Popover>
+          <Button
+            variant="outline"
+            v-if="!loggedIn"
+            as-child
+          >
+            <NuxtLink to="/login"> Войти </NuxtLink>
+          </Button>
+          <Popover v-else>
             <PopoverTrigger as-child>
               <Button variant="outline"> Open popover </Button>
             </PopoverTrigger>
             <PopoverContent class="w-80">
               <div class="flex flex-col gap-4">
-                <Button variant="outline" v-if="!loggedIn" as-child>
-                  <NuxtLink to="/login"> Войти </NuxtLink>
-                </Button>
-                <template v-else>
+                <template v-if="loggedIn">
                   <Button variant="outline" size="icon">
                     <NuxtLink to="/register">
                       <User :size="30" :stroke-width="1" />
@@ -50,6 +54,8 @@ import { cn } from "~/lib/utils";
 interface IProps {
   class?: HTMLAttributes["class"];
 }
+const route = useRoute();
+
 const { clear, user, session, loggedIn } = useUserSession();
 const props = defineProps<IProps>();
 

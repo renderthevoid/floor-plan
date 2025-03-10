@@ -20,6 +20,7 @@ export default defineNuxtConfig({
   prisma: {
     autoSetupPrisma: true,
   },
+
   shadcn: {
     prefix: "",
     componentDir: "./components/ui",

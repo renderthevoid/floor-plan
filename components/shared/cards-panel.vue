@@ -15,18 +15,19 @@
 </template>
 
 <script setup lang="ts">
+import { useToast } from "@/components/ui/toast/use-toast";
 import { useFavoriteStore } from "~/store/favoriteStore";
 import { useFloorsStore } from "~/store/floorsStore";
 
-const { session } = useUserSession();
-
 const floorsStore = useFloorsStore();
 const favoriteStore = useFavoriteStore();
+const { session } = useUserSession();
+const { toast } = useToast();
 
 const floorsWithFavorite = computed(() => {
   return floorsStore.floors.map((item) => {
     const favorite = favoriteStore.favorites.find(
-      (fav) => fav.floorId === item.id,
+      (fav) => fav.floorId === item.id
     );
 
     return {
@@ -43,7 +44,10 @@ const clickHandler = async ([id, isFavorite, favoriteId]: [
   number,
 ]) => {
   if (!session.value.user) {
-    return
+    return toast({
+      title: "Чтобы добавить в избранное необходимо войти в аккаунт",
+      variant: "destructive",
+    });
   }
   if (isFavorite) {
     return favoriteStore.removeFavorite({
@@ -56,7 +60,6 @@ const clickHandler = async ([id, isFavorite, favoriteId]: [
     floorId: id,
     userId: session.value.user!.id,
   });
-
 };
 
 onMounted(async () => {
