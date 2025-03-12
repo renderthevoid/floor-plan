@@ -68,7 +68,9 @@ interface IProps {
   obj: FloorWithFavoriteExtended;
   id?: string;
   isFavorite?: boolean;
+  isLoading?: boolean;
 }
+
 const props = defineProps<IProps>();
 const emit = defineEmits(["click-favorite"]);
 

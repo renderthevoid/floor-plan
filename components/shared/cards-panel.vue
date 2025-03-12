@@ -1,5 +1,6 @@
 <template>
   {{ session }}
+
   <div class="flex my-10">
     <div class="grid grid-cols-3 gap-4 w-full">
       <card-item
@@ -7,10 +8,10 @@
         :key="i"
         :obj="item"
         :isFavorite="item.isFavorite"
+        :isLoading="floorsStore.loading"
         @click-favorite="clickHandler"
       ></card-item>
     </div>
-    <span></span>
   </div>
 </template>
 
@@ -18,11 +19,14 @@
 import { useToast } from "@/components/ui/toast/use-toast";
 import { useFavoriteStore } from "~/store/favoriteStore";
 import { useFloorsStore } from "~/store/floorsStore";
+import { useRoute, useRouter } from "vue-router";
 
 const floorsStore = useFloorsStore();
 const favoriteStore = useFavoriteStore();
 const { session } = useUserSession();
 const { toast } = useToast();
+const router = useRouter();
+const route = useRoute();
 
 const floorsWithFavorite = computed(() => {
   return floorsStore.floors.map((item) => {
@@ -62,8 +66,30 @@ const clickHandler = async ([id, isFavorite, favoriteId]: [
   });
 };
 
-onMounted(async () => {
+const fetchFloorsDebounced = useDebounceFn(async () => {
   await floorsStore.fetchFloors();
+
+  router.replace({
+    query: {
+      ...route.query,
+      minPrice: floorsStore.filtersState.prices[0],
+      maxPrice: floorsStore.filtersState.prices[1],
+      minSquare: floorsStore.filtersState.squares[0],
+      maxSquare: floorsStore.filtersState.squares[1],
+    },
+  });
+}, 500);
+
+watch(
+  () => floorsStore.filtersState,
+  async () => {
+    fetchFloorsDebounced(); // Вместо мгновенного вызова, теперь с debounce
+  },
+  { deep: true, immediate: true }
+);
+
+watchEffect(async () => {
+
   if (session.value.user) {
     await favoriteStore.fetchFavorites(session.value.user.id);
   }

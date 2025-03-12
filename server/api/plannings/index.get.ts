@@ -2,34 +2,54 @@ import { prisma } from "~/server/db";
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event);
+  
+  const toNumber = (value: any) =>
+    isNaN(Number(value)) ? undefined : Number(value);
 
   const filters = {
-    rooms: query.rooms ? Number(query.rooms) : undefined,
-    minPrice: query.minPrice ? Number(query.minPrice) : undefined,
-    maxPrice: query.maxPrice ? Number(query.maxPrice) : undefined,
+    rooms: toNumber(query.rooms),
+    minPrice: toNumber(query.minPrice),
+    maxPrice: toNumber(query.maxPrice),
+    minSquare: toNumber(query.minSquare),
+    maxSquare: toNumber(query.maxSquare),
     project: query.project ? String(query.project) : undefined,
   };
 
-
-  const where = {
+  const where: any = {
     ...(filters.rooms !== undefined && { rooms: filters.rooms }),
-    ...(filters.minPrice !== undefined && { price: { gte: filters.minPrice } }),
-    ...(filters.maxPrice !== undefined && { price: { lte: filters.maxPrice } }),
     ...(filters.project && { project: filters.project }),
   };
 
-  const floors = await prisma.floor.findMany({
-    where,
-    take: query.limit ? Number(query.limit) : undefined, 
-    skip: query.offset ? Number(query.offset) : undefined, 
-  });
+  if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
+    where.price = {
+      ...(filters.minPrice !== undefined && { gte: filters.minPrice }),
+      ...(filters.maxPrice !== undefined && { lte: filters.maxPrice }),
+    };
+  }
 
-  const totalItems = await prisma.floor.count({ where });
+  if (filters.minSquare !== undefined || filters.maxSquare !== undefined) {
+    where.area = {
+      ...(filters.minSquare !== undefined && { gte: filters.minSquare }),
+      ...(filters.maxSquare !== undefined && { lte: filters.maxSquare }),
+    };
+  }
 
-  return {
-    data: floors,
-    meta: {
-      totalItems,
-    },
-  };
+  try {
+    const floors = await prisma.floor.findMany({
+      where,
+      take: toNumber(query.limit),
+      skip: toNumber(query.offset),
+    });
+
+    const totalItems = await prisma.floor.count({ where });
+
+    return {
+      data: floors,
+      meta: { totalItems },
+    };
+  } catch (error) {
+    return createError({
+      statusCode: 400,
+    });
+  }
 });

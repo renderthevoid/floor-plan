@@ -44,6 +44,7 @@
     "@types/bcrypt": "^5.0.2",
     "@types/node": "^22.5.4",
     "@vue/runtime-dom": "^3.5.13",
+    "@vueuse/nuxt": "^13.0.0",
     "eslint": "^9.10.0",
     "prisma": "^5.19.1",
     "ts-node": "^10.9.2",

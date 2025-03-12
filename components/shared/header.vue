@@ -6,11 +6,7 @@
           <h1 class="text-3xl font-bold">ПЛАНИРОВКИ</h1>
         </NuxtLink>
         <div class="flex items-center justify-center gap-2">
-          <Button
-            variant="outline"
-            v-if="!loggedIn"
-            as-child
-          >
+          <Button v-if="!loggedIn" variant="outline" as-child>
             <NuxtLink to="/login"> Войти </NuxtLink>
           </Button>
           <Popover v-else>

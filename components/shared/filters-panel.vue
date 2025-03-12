@@ -9,9 +9,12 @@
           <SelectContent>
             <SelectGroup>
               <SelectLabel>Проекты</SelectLabel>
-              <template v-for="(project, i) in projects" :key="project">
-                <SelectItem :value="project">{{ project }}</SelectItem>
-              </template>
+              <SelectItem
+                v-for="(project, index) in projects"
+                :key="index"
+                :value="project"
+                >{{ project }}</SelectItem
+              >
             </SelectGroup>
           </SelectContent>
         </Select>
@@ -30,7 +33,7 @@
           :max="20000000"
           :step="10000"
           metric="₽"
-          v-model="filtersState.prices"
+          v-model="floorsStore.filtersState.prices"
         ></FiltersInput>
       </FiltersPanelItem>
 
@@ -39,7 +42,7 @@
           :min="20"
           :max="200"
           :step="0.1"
-          v-model="filtersState.squares"
+          v-model="floorsStore.filtersState.squares"
         ></FiltersInput>
       </FiltersPanelItem>
     </div>
@@ -62,7 +65,9 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, watch } from "vue";
+import { useDebounceFn } from "@vueuse/core";
+import { RotateCcw } from "lucide-vue-next";
+import { ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useFloorsStore } from "~/store/floorsStore";
 
@@ -77,43 +82,20 @@ const items = ref([
   { id: 3, roominess: "3к", pressed: false },
   { id: 4, roominess: "4к", pressed: false },
 ]);
-// const projects = computed(() => {
-//   return [...new Set(floorsStore.floors.map((i) => i.project))];
-// });
 
 const projects = ref();
 
-const filtersState = reactive({
-  prices: [2800000, 20000000],
-  squares: [20, 200],
+
+
+
+watchEffect(() => {
+  projects.value = [...new Set(floorsStore.floors.map((i) => i.project))];
 });
-
-watch(
-  () => filtersState.prices,
-  ([from, to]) => {
-    router.replace({ query: { ...route.query, minPrice: from, maxPrice: to } });
-  },
-  { deep: true }
-);
-
-watch(
-  () => filtersState.squares,
-  ([from, to]) => {
-    router.replace({
-      query: { ...route.query, minSquare: from, maxSquare: to },
-    });
-  },
-  { deep: true }
-);
 
 const resetFilters = () => {
   items.value.forEach((i) => (i.pressed = false));
-  filtersState.prices = [2800000, 20000000];
-  filtersState.squares = [20, 200];
+  floorsStore.filtersState.prices = [2800000, 20000000];
+  floorsStore.filtersState.squares = [20, 200];
   router.replace({ query: {} });
 };
-
-callOnce(() => {
-  projects.value = [...new Set(floorsStore.floors.map((i) => i.project))];
-});
 </script>
