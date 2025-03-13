@@ -2,7 +2,7 @@
   <div class="pb-16 border-b border-border">
     <div class="flex justify-between gap-5">
       <FiltersPanelItem title="Проект">
-        <Select>
+        <Select v-model="filtersState.selectedProject">
           <SelectTrigger class="w-[180px]">
             <SelectValue placeholder="Выберите проект" />
           </SelectTrigger>
@@ -23,7 +23,7 @@
       <FiltersPanelItem title="Укажите количество комнат">
         <FiltersToggleGroup
           class="flex justify-start gap-2"
-          :items="items"
+          :items="filtersState.rooms"
         ></FiltersToggleGroup>
       </FiltersPanelItem>
 
@@ -33,7 +33,7 @@
           :max="20000000"
           :step="10000"
           metric="₽"
-          v-model="floorsStore.filtersState.prices"
+          v-model="filtersState.prices"
         ></FiltersInput>
       </FiltersPanelItem>
 
@@ -42,13 +42,13 @@
           :min="20"
           :max="200"
           :step="0.1"
-          v-model="floorsStore.filtersState.squares"
+          v-model="filtersState.squares"
         ></FiltersInput>
       </FiltersPanelItem>
     </div>
     <div class="flex items-center justify-end mt-12">
       <span class="text-foreground text-md text-center flex-1">
-        Найдено {{ floorsStore.floorsCount }} квартир
+        Найдено {{ floorsCount }} квартир
       </span>
       <div>
         <Button
@@ -65,7 +65,6 @@
 </template>
 
 <script setup lang="ts">
-import { useDebounceFn } from "@vueuse/core";
 import { RotateCcw } from "lucide-vue-next";
 import { ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -74,28 +73,17 @@ import { useFloorsStore } from "~/store/floorsStore";
 const router = useRouter();
 const route = useRoute();
 const floorsStore = useFloorsStore();
-
-const items = ref([
-  { id: 0, roominess: "Ст", pressed: false },
-  { id: 1, roominess: "1к", pressed: false },
-  { id: 2, roominess: "2к", pressed: false },
-  { id: 3, roominess: "3к", pressed: false },
-  { id: 4, roominess: "4к", pressed: false },
-]);
-
+const { filtersState, floorsCount } = storeToRefs(floorsStore);
 const projects = ref();
 
-
-
-
-watchEffect(() => {
-  projects.value = [...new Set(floorsStore.floors.map((i) => i.project))];
-});
-
 const resetFilters = () => {
-  items.value.forEach((i) => (i.pressed = false));
-  floorsStore.filtersState.prices = [2800000, 20000000];
-  floorsStore.filtersState.squares = [20, 200];
-  router.replace({ query: {} });
+  filtersState.value.rooms.forEach((i) => (i.pressed = false));
+  filtersState.value.prices = [2800000, 20000000];
+  filtersState.value.squares = [20, 200];
+  filtersState.value.selectedProject = undefined;
 };
+
+watchEffect(async () => {
+  projects.value = await floorsStore.fetchProjects();
+});
 </script>

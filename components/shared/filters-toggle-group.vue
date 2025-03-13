@@ -8,7 +8,6 @@
       class="bg-none border border-foreground text-foreground/90 data-[state=on]:bg-primary data-[state=on]:border-primary data-[state=on]:text-background"
       v-model:pressed="item.pressed"
     >
-
       <span>{{ item.roominess }}</span>
     </Toggle>
   </div>
@@ -17,16 +16,20 @@
 <script lang="ts" setup>
 import { cn } from "@/lib/utils";
 import { type HTMLAttributes } from "vue";
+
+interface IItem {
+  id: number;
+  roominess: string;
+  pressed: boolean;
+}
+
 interface IProps {
-  items?: [];
+  items?: IItem[];
   class?: HTMLAttributes["class"];
 }
-const emit = defineEmits([""]);
+
 const props = defineProps<IProps>();
 
-const onClick = () => {
-  emit("select", 1);
-};
 </script>
 
 <style scoped></style>

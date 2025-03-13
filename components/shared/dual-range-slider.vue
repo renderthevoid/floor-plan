@@ -5,6 +5,7 @@
       'relative flex w-full touch-none select-none items-center',
       props.class,
     ]"
+    :default-value="[min, max]"
     :min="min"
     :max="max"
     :step="step"

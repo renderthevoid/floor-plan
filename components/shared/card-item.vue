@@ -1,5 +1,12 @@
 <template>
-  <div class="py-8 px-10 border border-foreground rounded-md">
+  <template v-if="props.isLoading">
+    <Skeleton
+      class="h-[400px] w-full"
+      v-for="i in 10"
+      :key="i"
+    ></Skeleton>
+  </template>
+  <div class="py-8 px-10 border border-foreground rounded-md" v-else>
     <div class="">
       <div class="flex justify-between items-center h-full w-full">
         <div class="flex flex-col">
@@ -11,9 +18,11 @@
             <span class="">{{ props.obj.area }} м²</span>
           </div>
           <div class="flex gap-4 items-end h-full">
-            <span class="text-xl font-semibold">{{ props.obj.price }} ₽</span>
+            <span class="text-xl font-semibold"
+              >{{ divideQuery(props.obj.price) }} ₽</span
+            >
             <span class="text-xs line-through" v-if="props.obj.discount"
-              >{{ props.obj.oldPrice }} ₽</span
+              >{{ divideQuery(props.obj.oldPrice) }} ₽</span
             >
           </div>
         </div>
@@ -58,6 +67,7 @@ import type { Floor } from "@prisma/client";
 import dayjs from "dayjs";
 import "dayjs/locale/ru";
 import { Heart } from "lucide-vue-next";
+import { divideQuery } from "~/lib/divideQuery";
 
 type FloorWithFavoriteExtended = Floor & {
   favoriteId?: number | null;
@@ -73,8 +83,6 @@ interface IProps {
 
 const props = defineProps<IProps>();
 const emit = defineEmits(["click-favorite"]);
-
-const { user, session } = useUserSession();
 
 const clickHandler = () => {
   emit("click-favorite", [

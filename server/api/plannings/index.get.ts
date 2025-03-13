@@ -2,12 +2,15 @@ import { prisma } from "~/server/db";
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event);
-  
+
   const toNumber = (value: any) =>
     isNaN(Number(value)) ? undefined : Number(value);
 
   const filters = {
-    rooms: toNumber(query.rooms),
+    rooms:
+      typeof query.rooms === "string"
+        ? query.rooms.split(",").map(toNumber)
+        : toNumber(query.rooms),
     minPrice: toNumber(query.minPrice),
     maxPrice: toNumber(query.maxPrice),
     minSquare: toNumber(query.minSquare),
@@ -16,7 +19,9 @@ export default defineEventHandler(async (event) => {
   };
 
   const where: any = {
-    ...(filters.rooms !== undefined && { rooms: filters.rooms }),
+    ...(filters.rooms !== undefined && {
+      rooms: { in: filters.rooms },
+    }),
     ...(filters.project && { project: filters.project }),
   };
 
